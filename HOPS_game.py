@@ -1,9 +1,11 @@
 # HOPS_game.py
-import random, sqlite3, asyncio
+import random, asyncio
 
 # Dictionary to track active challenges and wagers
 active_challenges = {}
 active_wagers = {}
+
+from services.team_service import calculate_off_def_totals, get_team_game_team_data
 
 async def wait_for_reaction(bot, message, user, valid_reactions):
     # Waits for a valid reaction from a specific user on a given message.
@@ -171,10 +173,8 @@ async def run_game(bot, channel, user1, user2, team1_name, team1_data, team2_nam
 
 def calculate_team_ratings(team_data, opponent_data):
     # Calculates the offensive and defensive ratings of a team.
-    total_offensive_rating = sum(player["offensive_rating"] for player in team_data)
-    total_defensive_rating = sum(player["defensive_rating"] for player in team_data)
-
-    return total_offensive_rating, total_defensive_rating
+    # `opponent_data` is unused but kept for backward-compatible signature.
+    return calculate_off_def_totals(team_data)
 
 
 def calculate_quarter_score(team_off, opponent_def, quarter, correct_choice):
@@ -205,91 +205,7 @@ def calculate_quarter_score(team_off, opponent_def, quarter, correct_choice):
     return max(final_score, 0)  # Prevent negative scores
 
 def get_team_data(discord_id):
-    #Retrieve team data from database
-
-    conn = sqlite3.connect('HOPS_prototype1.db')
-    cursor = conn.cursor()
-
-    # Find user_id from discord_id
-    cursor.execute("SELECT user_id FROM users WHERE discord_id = ?", (discord_id,))
-    user_id_result = cursor.fetchone()
-
-    if not user_id_result:
-        conn.close()
-        return None, None  # No user found
-
-    user_id = user_id_result[0]
-
-    # Check if the user has a team and get the team name
-    cursor.execute("SELECT team_name FROM teams WHERE user_id = ?", (user_id,))
-    team_name_result = cursor.fetchone()
-
-    if not team_name_result:
-        conn.close()
-        return None, None  # No team found
-
-    team_name = team_name_result[0]
-
-    # Get all position columns dynamically
-    cursor.execute("PRAGMA table_info(teams);")
-    columns = [column[1] for column in cursor.fetchall()]
-    position_columns = [col for col in columns if col not in ('user_id', 'team_name')]
-
-    # Retrieve player info for each position
-    team_data = []
-    for position in position_columns:
-        cursor.execute(f"SELECT {position} FROM teams WHERE user_id = ?", (user_id,))
-        result = cursor.fetchone()
-
-        if result and result[0]:  # If there's a player in this position
-            instance_id = result[0]
-
-            # Get the card_id from user_cards using the instance_id
-            cursor.execute("SELECT card_id FROM user_cards WHERE instance_id = ?", (instance_id,))
-            user_card_data = cursor.fetchone()
-
-            if user_card_data:
-                card_id = user_card_data[0]
-
-                # Now get the player data from the cards table using the card_id
-                cursor.execute("SELECT * FROM cards WHERE card_id = ?", (card_id,))
-                player_data = cursor.fetchone()
-
-                if player_data:
-                    print(f"player_data: {player_data}")  # Debugging: Print the player data to check its structure
-
-                    # Ensure player_data has at least 9 elements before accessing index 8
-                    if len(player_data) > 8:
-                        # Convert defensive_rating to a float if it is not already a numeric value
-                        defensive_rating = player_data[7]
-                        if isinstance(defensive_rating, str):
-                            defensive_rating = float(defensive_rating) if defensive_rating.replace('.', '',
-                                                                                                   1).isdigit() else 0.0
-
-                        player_info = {
-                            "card_id": player_data[0],
-                            "player_name": player_data[1],
-                            "position": player_data[2],
-                            "offensive_rating": player_data[6],  # Assuming offensive_rating is in the 7th column
-                            "defensive_rating": defensive_rating,  # Ensure it's a float
-                            "attributes": player_data[8] if player_data[8] else [],
-
-                        }
-                    else:
-                        # Handle case where player_data does not have expected columns
-                        player_info = {
-                            "card_id": player_data[0],
-                            "player_name": player_data[1],
-                            "position": player_data[2],
-                            "offensive_rating": player_data[5],
-                            "defensive_rating": player_data[6],
-                            "attributes": player_data[7],
-                        }
-
-                    team_data.append(player_info)
-
-    conn.close()
-    return team_name, team_data
+    return get_team_game_team_data(discord_id)
 
 
 async def transfer_wager(winner, wager):
