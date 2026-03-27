@@ -20,6 +20,7 @@ sync_player_cards_to_db()
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.reactions = True
 bot = discord.Client(intents=intents)
 
 # Cooldown dictionaries
@@ -207,12 +208,12 @@ async def on_message(message):
         print(f"Challenger Team ({team1_name}):")
 
         for player in team1_data:
-            print(f"  {player['player_name']} - Off: {player['offensive_rating']}, Def: {player['defensive_rating']}")
+            print(f"  {player.player_name} - Off: {player.offensive_rating}, Def: {player.defensive_rating}")
 
         print(f"Opponent Team ({team2_name}):")
 
         for player in team2_data:
-            print(f"  {player['player_name']} - Off: {player['offensive_rating']}, Def: {player['defensive_rating']}")
+            print(f"  {player.player_name} - Off: {player.offensive_rating}, Def: {player.defensive_rating}")
 
         # Proceed with handling the challenge, passing team data
         await handle_challenge(bot, message, target_user, team1_name, team1_data, team2_name, team2_data)

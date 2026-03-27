@@ -1,0 +1,98 @@
+Cards & Collection
+1) !cards
+   - Drops 3 random player cards (image compiled from 3 PlayerCard entries).
+   - You must claim one card by reacting to the drop message:
+     - 1️⃣ = first card
+     - 2️⃣ = second card
+     - 3️⃣ = third card
+
+2) !collection
+   - Shows your card collection with pagination.
+   - Pagination controls (on the collection message):
+     - ◀️ previous page
+     - ▶️ next page
+
+3) !stats [player_name]
+   - If `player_name` is provided: shows stats for the matching PlayerCard in the catalog.
+   - If omitted: shows stats for your most recently claimed card.
+
+Teams 
+4) !create_team <team_name> <instance_id_1> <instance_id_2> <instance_id_3> <instance_id_4> <instance_id_5> <instance_id_6>
+   - Creates your team with 6 slots.
+   - Instance IDs are assigned in this order:
+     - 1: point_guard
+     - 2: shooting_guard
+     - 3: small_forward
+     - 4: power_forward
+     - 5: center
+     - 6: sixth_man
+
+5) !rename_team <new_team_name>
+   - Renames your team.
+
+6) !update_team
+   - Starts an interactive team update:
+     - React with a position:
+       1️⃣ point_guard
+       2️⃣ shooting_guard
+       3️⃣ small_forward
+       4️⃣ power_forward
+       5️⃣ center
+       6️⃣ sixth_man
+     - Then send the desired player `instance_id` as the next message.
+
+7) !view_team
+   - Displays your team (all 6 slots) as text.
+
+Trading & Giving
+8) !trade <discord_id> <offer_items...>
+   - Initiates a trade offer to the target Discord user.
+   - `discord_id` must be the numeric ID of the target user.
+   - `offer_items...` can include:
+     - Card instance IDs (the alphanumeric `instance_id` from your collection)
+     - Optional cash token (starts with `$`, e.g. `$100`)
+   - Flow:
+     1. Target user reacts ✅/❌ to accept/decline.
+     2. If accepted, the target must reply with:
+        !return <return_items...>
+     3. Then a final confirmation happens (✅/❌) between both players.
+
+9) !return <return_items...>
+   - Used ONLY as a reply during a trade flow (see `!trade` step 2).
+   - Same item format as trade offers:
+     - Card instance IDs and/or a `$<amount>` cash token.
+
+10) !giveaway @target_user <give_items...>
+   - Gives cards/cash to another user.
+   - `give_items...` format:
+     - Card instance IDs and/or a `$<amount>` cash token.
+   - Flow:
+     1. The target user reacts ✅/❌ to accept/decline.
+     2. If accepted, ownership/court cash is transferred.
+
+Gameplay (Challenge / Match)
+11) !challenge @User
+   - Starts a match between two teams.
+   - Flow:
+     1. Target team reacts ✅/❌ to accept/decline the challenge.
+     2. If accepted, both teams go into an optional wager stage (wagers are currently not fully functional).
+     3. Then the game simulation runs (quarter-by-quarter prompts).
+
+12) !wager <wager_text>
+   - Used ONLY during the wager stage after a challenge is accepted.
+   - This bot currently stores wager messages as raw text (it does not strictly parse the format).
+   - The in-game prompt suggests including court cash and instance IDs; example:
+     - !wager $100 instance_id_1 instance_id_2
+
+Reactions used internally (for reference)
+- Card drop claim:
+  - 1️⃣ / 2️⃣ / 3️⃣
+- Collection pagination:
+  - ◀️ / ▶️
+- Team update position selection:
+  - 1️⃣-6️⃣
+- Trade / giveaway confirmations:
+  - ✅ / ❌
+- Challenge acceptance:
+  - ✅ / ❌
+

@@ -1,5 +1,8 @@
 #player_cards.py
-from PIL import Image
+try:
+    from PIL import Image
+except ModuleNotFoundError:
+    Image = None
 
 
 class PlayerCard:
@@ -15,14 +18,17 @@ class PlayerCard:
         self.defensive_rating = defensive_rating
         self.attributes = attributes
 
-        # Loads the image
-        try:
-            self.image = Image.open(image_path) # Resize the image
-            self.image = self.image.resize((200, 300))
-            print(f"Image loaded successfully: {image_path}")
-        except Exception as e:
-            print(f"Error loading image: {e}")
-            self.image = None  # Set image to None if loading fails
+        # Loads the image (optional: allow bot to run without PIL installed)
+        if Image is None:
+            self.image = None
+        else:
+            try:
+                self.image = Image.open(image_path)  # Resize the image
+                self.image = self.image.resize((200, 300))
+                print(f"Image loaded successfully: {image_path}")
+            except Exception as e:
+                print(f"Error loading image: {e}")
+                self.image = None  # Set image to None if loading fails
 
         PlayerCard.cards.append(self) # Add this card to the list of created cards
 
